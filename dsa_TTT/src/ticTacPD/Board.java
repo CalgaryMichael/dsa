@@ -1,7 +1,6 @@
 package ticTacPD;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by calgarymichael on 4/6/17.
@@ -143,76 +142,6 @@ public class Board {
     }
 
 
-    // TODO: delete
-    public boolean move(MoveType player, int x, int y) {
-        Position pos = findPositionforXandY(x, y);
-        if (isPosOpen(pos)) {
-            pos.setPlayerOccupied(player);
-            return true;
-        }
-
-        return false;
-    }
-
-
-    // TODO: Another posibility
-    public void getBestMove() {
-        ArrayList<Position> open = getOpenPos();
-        int score = minimax(open, 0, 1);
-    }
-
-
-    private int minimax(ArrayList<Position> open, int depth, int turn) {
-        // check to see if anyone has won
-        MoveType checkWinner = winner();
-        if (checkWinner == MoveType.O)
-            return +1;
-        else if (checkWinner == MoveType.X)
-            return -1;
-
-        // check if empty
-        if (open.isEmpty())
-            return 0;
-
-        int min = Integer.MAX_VALUE;
-        int max = Integer.MIN_VALUE;
-
-        for (Position pos : open) {
-            if (turn == 1) {
-                if (move(MoveType.O, pos.getX(), pos.getY())) {
-                    open.remove(pos);
-                    int currentScore = minimax(open, depth + 1, 2);
-                    max = Math.max(currentScore, max);
-
-                    // reset this move
-                    if (currentScore == 1) {
-                        pos.clearPlayer();
-                        break;
-                    }
-                }
-
-            } else if (turn == 2) {
-                if (move(MoveType.X, pos.getX(), pos.getY())) {
-                    open.remove(pos);
-                    int currentScore = minimax(open, depth + 1, 1);
-                    min = Math.min(currentScore, min);
-
-                    // reset this move
-                    if (currentScore == 1) {
-                        pos.clearPlayer();
-                        break;
-                    }
-                }
-            }
-
-            // reset this move
-            pos.clearPlayer();
-        }
-
-        return turn == 1 ? max : min;
-    }
-
-
     private ArrayList<Position> getOpenPos() {
         ArrayList<Position> open = new ArrayList<>();
 
@@ -309,19 +238,6 @@ public class Board {
 
     public boolean isComplete() {
         return this.winner() != null || this.getOpenPos().isEmpty();
-    }
-
-
-    private ArrayList<Position> clone(List<Position> list) {
-        ArrayList<Position> pos = new ArrayList<>();
-        for (Position p : list) {
-            try {
-                pos.add((Position)p.clone());
-            } catch  (Exception e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        return pos;
     }
 
 

@@ -115,38 +115,72 @@ public class Player {
         Node<Board> tree = new Node<>(board);
         buildTree(tree, this, opponent);
         ArrayList<Node<Board>> leaves = getLeaves(tree);
-        return determineMove(leaves);
+        if (!leaves.isEmpty())
+            return determineMove(leaves);
+        return null;
     }
 
 
-    private void buildTree(Node<Board> node, Player active, Player passive) {
+    private int buildTree(Node<Board> node, Player active, Player passive) {
+        boolean isComputer = active.getMoveType() == MoveType.O;
         Board current = node.getData();
         ArrayList<int[]> openMoves = current.getOpenCoordinates();
+
+        // check for winner
+        MoveType winner = current.winner();
+        if (winner == MoveType.O)
+            return +1;
+        else if (winner == MoveType.X)
+            return -1;
+
+        // check empty
+        if (openMoves.isEmpty())
+            return 0;
+
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+
         for (int[] pos : openMoves) {
             Board boardOption = current.clone();
             if (!boardOption.isComplete()) {
                 boardOption.move(active, pos[0], pos[1]);
-                buildTree(node.addChild(boardOption), passive, active);
+                int currentScore = buildTree(node.addChild(boardOption), passive, active);
+
+                // calculate score
+                if (isComputer)
+                    max = Math.max(currentScore, max);
+                else
+                    min = Math.min(currentScore, min);
+                node.score = currentScore;
+
+                if (currentScore == 1)
+                    break;
             }
-            calculateScore(node);
         }
+
+        return isComputer ? max : min;
     }
 
 
-    private void calculateScore(Node<Board> node) {
-        int score = 0;
+    private ArrayList<Node<Board>> getLeaves(Node<Board> tree) {
+        ArrayList<Node<Board>> nodes = new ArrayList<>();
 
-        if (!node.isRoot())
-            score += node.parent.score;
-
-        if (node.data.isComplete()) {
-            if (node.data.getWinner() == MoveType.X)
-                score -= 1;
-            else if (node.data.getWinner() == MoveType.O)
-                score += 1;
+        if (tree.getChildren().isEmpty()) {
+            return nodes;
+        } else if (tree.getChildren().size() < 2) {
+            nodes.addAll(tree.getChildren());
+        } else {
+            for (Node<Board> n : tree.getChildren()) {
+                if (n.isLeaf()) {
+                    if (n.score > 0)
+                        nodes.add(n);
+                } else {
+                    nodes.addAll(getLeaves(n));
+                }
+            }
         }
 
-        node.setScore(score);
+        return nodes;
     }
 
 
@@ -161,22 +195,6 @@ public class Player {
         }
 
         return current.getData().getDifference(previous.getData());
-    }
-
-
-    private ArrayList<Node<Board>> getLeaves(Node<Board> tree) {
-        ArrayList<Node<Board>> nodes = new ArrayList<>();
-
-        for (Node<Board> n : tree.getChildren()) {
-            if (n.isLeaf()) {
-                if (n.score > 0)
-                    nodes.add(n);
-            } else {
-                nodes.addAll(getLeaves(n));
-            }
-        }
-
-        return nodes;
     }
 
 

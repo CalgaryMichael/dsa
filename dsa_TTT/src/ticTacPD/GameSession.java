@@ -50,7 +50,10 @@ public class GameSession {
 
     public void generateComputer() {
         int[] bestMove = this.computer.generateBestMove(this.board, this.currentPlayer);
-        this.board.move(this.computer, bestMove[0], bestMove[1]);
+        if (bestMove != null)
+            this.board.move(this.computer, bestMove[0], bestMove[1]);
+        else
+            System.out.println("No Moves");
     }
 
 
