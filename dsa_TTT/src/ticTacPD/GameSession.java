@@ -29,31 +29,31 @@ public class GameSession {
     // ===================
 
     public void startGame() {
+        this.board = new Board();
         this.sessionStatus = Status.IN_SESSION;
     }
 
 
-    public boolean move(int x, int y) {
-        if (sessionStatus == Status.IN_SESSION) {
+    public int[] move(int x, int y) {
+        if (isPlayable()) {
             boolean moved = this.board.move(this.currentPlayer, x, y);
             if (moved) {
-                if (!this.board.isComplete()) {
-                    generateComputer();
-                    return true;
-                }
+                if (!isComplete())
+                    return generateComputer();
             }
         }
 
-        return false;
+        return null;
     }
 
 
-    public void generateComputer() {
+    public int[] generateComputer() {
         int[] bestMove = this.computer.generateBestMove(this.board, this.currentPlayer);
         if (bestMove != null)
             this.board.move(this.computer, bestMove[0], bestMove[1]);
         else
             System.out.println("No Moves");
+        return bestMove;
     }
 
 
@@ -67,12 +67,17 @@ public class GameSession {
     }
 
 
+    public boolean isPlayable() {
+        return this.sessionStatus == Status.IN_SESSION;
+    }
+
+
     public MoveType getWinner() {
         return this.board.winner();
     }
 
 
-    private MoveType getComputerType() {
+    public MoveType getComputerType() {
         return this.currentPlayer.getMoveType() == MoveType.X ? MoveType.O : MoveType.X;
     }
 
